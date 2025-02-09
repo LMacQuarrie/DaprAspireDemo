@@ -1,3 +1,4 @@
+using Dapr;
 using Microsoft.AspNetCore.Mvc;
 using PizzaOrder.Models;
 using PizzaOrder.Services;
@@ -29,7 +30,7 @@ public class OrderController : ControllerBase
     public async Task<ActionResult<Order>> GetOrder(string orderId)
     {
         var order = await _orderStateService.GetOrderAsync(orderId);
-        
+
         if (order == null)
         {
             return NotFound();
@@ -38,12 +39,12 @@ public class OrderController : ControllerBase
         return Ok(order);
     }
 
-    
+
     [HttpDelete("{orderId}")]
     public async Task<ActionResult<string>> DeleteOrder(string orderId)
     {
         var order = await _orderStateService.GetOrderAsync(orderId);
-        
+
         if (order == null)
         {
             return NotFound();
@@ -54,7 +55,8 @@ public class OrderController : ControllerBase
     }
 
     [HttpPost("/orders-sub")]
-    public async Task<IActionResult> HandleOrderUpdate(Order cloudEvent)
+    [Topic("pizzapubsub", "orders")]
+public async Task<IActionResult> HandleOrderUpdate(Order cloudEvent)
     {
         _logger.LogInformation("Received order update for order {OrderId}", 
             cloudEvent.OrderId);

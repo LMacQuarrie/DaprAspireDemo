@@ -20,6 +20,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCloudEvents();
+app.MapSubscribeHandler();
 
 app.MapControllers();
 app.Run();
