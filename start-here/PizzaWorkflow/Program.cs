@@ -4,6 +4,8 @@ using PizzaWorkflow.Workflows;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // BUG: The following line is missing from the original code
 builder.Services.AddControllers().AddDapr();
 
@@ -23,6 +25,8 @@ builder.Services.AddDaprWorkflow(options =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
