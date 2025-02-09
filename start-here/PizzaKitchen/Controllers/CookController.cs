@@ -1,6 +1,8 @@
+using Dapr;
+using Dapr.Client;
 using Microsoft.AspNetCore.Mvc;
-using PizzaKitchen.Models;
 using PizzaKitchen.Services;
+using PizzaShared.Messages.Kitchen;
 
 namespace PizzaKitchen.Controllers;
 
@@ -10,18 +12,23 @@ public class CookController : ControllerBase
 {
     private readonly ICookService _cookService;
     private readonly ILogger<CookController> _logger;
+    private readonly DaprClient _daprClient;
 
-    public CookController(ICookService cookService, ILogger<CookController> logger)
+    public CookController(ICookService cookService, ILogger<CookController> logger, DaprClient daprClient)
     {
         _cookService = cookService;
         _logger = logger;
+        _daprClient = daprClient;
     }
 
-    [HttpPost]
-    public async Task<ActionResult<Order>> Cook(Order order)
+    [Topic("pizzapubsub", "kitchen")]
+    public async Task<ActionResult<CookResultMessage>> Cook(CookMessage cookMessage)
     {
-        _logger.LogInformation("Starting cooking for order: {OrderId}", order.OrderId);
-        var result = await _cookService.CookPizzaAsync(order);
-        return Ok(result);
+        _logger.LogInformation("Starting cooking for order: {OrderId}", cookMessage.OrderId);
+        var result = await _cookService.CookPizzaAsync(cookMessage);
+        
+        await _daprClient.PublishEventAsync("pizzapubsub", "workflow-kitchen", result);
+
+        return Ok();
     }
 }

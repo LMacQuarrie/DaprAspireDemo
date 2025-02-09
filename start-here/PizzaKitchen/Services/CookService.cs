@@ -1,11 +1,12 @@
-using PizzaKitchen.Models;
 using Dapr.Client;
+using PizzaShared.Messages.Kitchen;
+using PizzaShared.Messages.Storefront;
 
 namespace PizzaKitchen.Services;
 
 public interface ICookService
 {
-    Task<Order> CookPizzaAsync(Order order);
+    Task<CookResultMessage> CookPizzaAsync(CookMessage cookMessage);
 }
 
 public class CookService : ICookService
@@ -23,7 +24,7 @@ public class CookService : ICookService
         _logger = logger;
     }
 
-    public async Task<Order> CookPizzaAsync(Order order)
+    public async Task<CookResultMessage> CookPizzaAsync(CookMessage cookMessage)
     {
         var stages = new (string status, int duration)[]
         {
@@ -32,6 +33,16 @@ public class CookService : ICookService
             ("cooking_adding_toppings", 2),
             ("cooking_baking", 5),
             ("cooking_quality_check", 1)
+        };
+
+        var order = new CookResultMessage
+        {
+            WorkflowId = cookMessage.WorkflowId,
+            OrderId = cookMessage.OrderId,
+            PizzaType = cookMessage.PizzaType,
+            Size = cookMessage.Size,
+            Customer = cookMessage.Customer,
+            Status = "unknown"
         };
 
         try

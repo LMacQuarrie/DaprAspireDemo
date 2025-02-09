@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DaprWorkshop.ServiceDefaults\DaprWorkshop.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\PizzaShared\PizzaShared.csproj" />
   </ItemGroup>
 </Project>

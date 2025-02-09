@@ -1,11 +1,11 @@
-using PizzaStorefront.Models;
 using Dapr.Client;
+using PizzaShared.Messages.Storefront;
 
 namespace PizzaStorefront.Services;
 
 public interface IStorefrontService
 {
-    Task<Order> ProcessOrderAsync(Order order);
+    Task<OrderResultMessage> ProcessOrderAsync(OrderMessage orderMessage);
 }
 
 public class StorefrontService : IStorefrontService
@@ -22,13 +22,23 @@ public class StorefrontService : IStorefrontService
         _logger = logger;
     }
 
-    public async Task<Order> ProcessOrderAsync(Order order)
+    public async Task<OrderResultMessage> ProcessOrderAsync(OrderMessage orderMessage)
     {
         var stages = new (string status, int duration)[]
         {
             ("validating", 1),
             ("processing", 2),
             ("confirmed", 1)
+        };
+
+        var order = new OrderResultMessage
+        {
+            WorkflowId = orderMessage.WorkflowId,
+            OrderId = orderMessage.OrderId,
+            PizzaType = orderMessage.PizzaType,
+            Size = orderMessage.Size,
+            Customer = orderMessage.Customer,
+            Status = "unknown"
         };
 
         try
