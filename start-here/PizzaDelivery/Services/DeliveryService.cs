@@ -1,11 +1,11 @@
-using PizzaDelivery.Models;
 using Dapr.Client;
+using PizzaShared.Messages.Delivery;
 
 namespace PizzaDelivery.Services;
 
 public interface IDeliveryService
 {
-    Task<Order> DeliverPizzaAsync(Order order);
+    Task<DeliveryResultMessage> DeliverPizzaAsync(DeliveryMessage deliveryMessage);
 }
 
 public class DeliveryService : IDeliveryService
@@ -22,7 +22,7 @@ public class DeliveryService : IDeliveryService
         _logger = logger;
     }
 
-    public async Task<Order> DeliverPizzaAsync(Order order)
+    public async Task<DeliveryResultMessage> DeliverPizzaAsync(DeliveryMessage deliveryMessage)
     {
         var stages = new (string status, int duration)[]
         {
@@ -32,6 +32,16 @@ public class DeliveryService : IDeliveryService
             ("delivery_on_the_way", 5),
             ("delivery_arriving", 2),
             ("delivery_at_location", 1)
+        };
+
+        var order = new DeliveryResultMessage
+        {
+            WorkflowId = deliveryMessage.WorkflowId,
+            OrderId = deliveryMessage.OrderId,
+            PizzaType = deliveryMessage.PizzaType,
+            Size = deliveryMessage.Size,
+            Customer = deliveryMessage.Customer,
+            Status = "unknown"
         };
 
         try

@@ -25,7 +25,9 @@ public class StorefrontController : ControllerBase
     public async Task<ActionResult<OrderResultMessage>> CreateOrder(OrderMessage order)
     {
         _logger.LogInformation("Received new order: {OrderId}", order.OrderId);
-        await _daprClient.PublishEventAsync("pizzapubsub", "workflow-storefront");
+
+        var result = await _storefrontService.ProcessOrderAsync(order);
+        await _daprClient.PublishEventAsync("pizzapubsub", "workflow-storefront", result);
         return Ok();
     }
 }

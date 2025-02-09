@@ -1,10 +1,11 @@
 ﻿using Dapr.Workflow;
 using Dapr.Client;
+using PizzaShared.Messages.Kitchen;
 using PizzaWorkflow.Models;
 
 namespace PizzaWorkflow.Activities
 {
-    public class CookingActivity : WorkflowActivity<Order, Order>
+    public class CookingActivity : WorkflowActivity<Order, Object?>
     {
         private readonly DaprClient _daprClient;
         private readonly ILogger<CookingActivity> _logger;
@@ -15,22 +16,16 @@ namespace PizzaWorkflow.Activities
             _logger = logger;
         }
 
-        public override async Task<Order> RunAsync(WorkflowActivityContext context, Order order)
+        public override async Task<Object?> RunAsync(WorkflowActivityContext context, Order order)
         {
             try
             {
                 _logger.LogInformation("Starting cooking process for order {OrderId}", order.OrderId);
 
-                var response = await _daprClient.InvokeMethodAsync<Order, Order>(
-                    HttpMethod.Post,
-                    "pizza-kitchen",
-                    "cook",
-                    order);
+                var message = MessageHelper.FillMessage<CookMessage>(context, order);
 
-                _logger.LogInformation("Order {OrderId} cooked with status {Status}",
-                    order.OrderId, response.Status);
-
-                return response;
+                await _daprClient.PublishEventAsync("pizzapubsub", "kitchen", message);
+                return null;
             }
             catch (Exception ex)
             {

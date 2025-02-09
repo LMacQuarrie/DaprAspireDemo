@@ -19,6 +19,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCloudEvents();
+app.MapSubscribeHandler();
+
 app.MapControllers();
 app.Run();
 

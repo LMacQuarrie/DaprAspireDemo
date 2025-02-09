@@ -45,6 +45,7 @@ builder.AddProject<Projects.PizzaWorkflow>("pizzaworkflow")
         AppId = "pizza-workflow",
         DaprHttpPort = 3505,
     })
-    .WithReference(statestore);
+    .WithReference(statestore)
+    .WithReference(pubsubComponent);
 
 builder.Build().Run();

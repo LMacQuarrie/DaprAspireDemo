@@ -12,9 +12,11 @@ public class PizzaOrderingWorkflow : Workflow<Order, Order>
         try
         {
             // Step 1: Place and process the order
-            var orderResult = await context.CallActivityAsync<Order>(
+            await context.CallActivityAsync<Order>(
               nameof(StorefrontActivity),
               order);
+
+            var orderResult = await context.WaitForExternalEventAsync<Order>("OrderComplete");
 
             if (orderResult.Status != "confirmed")
             {
@@ -22,9 +24,11 @@ public class PizzaOrderingWorkflow : Workflow<Order, Order>
             }
 
             // Step 2: Cook the pizza
-            var cookingResult = await context.CallActivityAsync<Order>(
+            await context.CallActivityAsync<Order>(
               nameof(CookingActivity),
               orderResult);
+
+            var cookingResult = await context.WaitForExternalEventAsync<Order>("CookComplete");
 
             if (cookingResult.Status != "cooked")
             {
@@ -46,9 +50,11 @@ public class PizzaOrderingWorkflow : Workflow<Order, Order>
             }
 
             // Step 4: Deliver the pizza
-            var deliveryResult = await context.CallActivityAsync<Order>(
+            await context.CallActivityAsync<Order>(
               nameof(DeliveryActivity),
               cookingResult);
+
+            var deliveryResult = await context.WaitForExternalEventAsync<Order>("DeliveryComplete");
 
             if (deliveryResult.Status != "delivered")
             {
